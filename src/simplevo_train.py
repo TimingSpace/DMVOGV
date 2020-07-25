@@ -174,14 +174,14 @@ def main():
 
                 forward_visual_result_m = tf.eular2pose(forward_visual_result)
                 ground_truth_m          = tf.eular2pose(ground_truth)
-                plot_path([ground_truth_m,forward_visual_result_m],epoch)
+                plot_path([ground_truth_m,forward_visual_result_m],epoch,args)
                 #forward_visual_result_m = tf.ses2poses(forward_visual_result)
                 #ground_truth_m          = tf.ses2poses(ground_truth)
                 rot_eval,tra_eval   = evaluate.evaluate(ground_truth_m,forward_visual_result_m)
                 
                 testing_ate_data.write(str(np.mean(tra_eval))+' '+ str(np.mean(rot_eval))+'\n')
                 testing_ate_data.flush()
-def plot_path(poses,epoch):
+def plot_path(poses,epoch,args):
     fig = plt.figure(figsize=(12,6.5))
     labels = ['Ground Truth','Estimation']
     i = 0
