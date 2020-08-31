@@ -139,7 +139,7 @@ def main():
                     break
             data_length = len(kitti_dataset)//input_batch_size*input_batch_size
             forward_visual_result = forward_visual_result.reshape(-1,6)*kitti_dataset.motion_stds
-            forward_visual_result[:,no_motion_flag]=0
+            #forward_visual_result[:,no_motion_flag]=0
             #ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset.motion_stds+kitti_dataset.motion_means
             ground_truth = ground_truth.reshape(-1,6)*kitti_dataset.motion_stds
 
@@ -168,7 +168,7 @@ def main():
                 ground_truth = np.append(ground_truth,gt_f_12)
             data_length = len(kitti_dataset_test)//input_batch_size*input_batch_size
             forward_visual_result = forward_visual_result.reshape(data_length,6)*kitti_dataset_test.motion_stds
-            forward_visual_result[:,no_motion_flag]=0
+            #forward_visual_result[:,no_motion_flag]=0
             #ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset_test.motion_stds+kitti_dataset_test.motion_means
             ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset_test.motion_stds
 

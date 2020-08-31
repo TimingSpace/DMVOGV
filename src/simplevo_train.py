@@ -14,7 +14,7 @@ import loss_functions
 import VONet
 import evaluate
 from options import parse as parse
-
+import matplotlib.pyplot as plt
 torch.manual_seed(100) # random seed generate random number
 
 
@@ -30,6 +30,7 @@ def main():
     use_gpu_flag = False
     data_balance_flag = False
     color_flag = False
+    rpe_flag   = False
     camera_parameter=[640,180,640,640,320,90]
     image_size = (camera_parameter[1],camera_parameter[0])
 
@@ -139,15 +140,16 @@ def main():
                         break
                 data_length = len(kitti_dataset)//input_batch_size*input_batch_size
                 forward_visual_result = forward_visual_result.reshape(-1,6)*kitti_dataset.motion_stds
-                forward_visual_result[:,no_motion_flag]=0
+                #forward_visual_result[:,no_motion_flag]=0
                 #ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset.motion_stds+kitti_dataset.motion_means
                 ground_truth = ground_truth.reshape(-1,6)*kitti_dataset.motion_stds
 
                 forward_visual_result_m = tf.eular2pose(forward_visual_result)
                 ground_truth_m          = tf.eular2pose(ground_truth)
-                rot_train,tra_train   = evaluate.evaluate(ground_truth_m,forward_visual_result_m)
-                training_ate_data.write(str(np.mean(tra_train))+' '+ str(np.mean(rot_train))+'\n')
-                training_ate_data.flush()
+                if rpe_flag:
+                    rot_train,tra_train   = evaluate.evaluate(ground_truth_m,forward_visual_result_m)
+                    training_ate_data.write(str(np.mean(tra_train))+' '+ str(np.mean(rot_train))+'\n')
+                    training_ate_data.flush()
                 torch.save(model.state_dict(), '../checkpoint/saved_model/model_'+args.model_name+'_'+str(epoch).zfill(3)+'.pt')
         ####Vilidation Path###############################################################
                 model.eval()
@@ -168,20 +170,21 @@ def main():
                     ground_truth = np.append(ground_truth,gt_f_12)
                 data_length = len(kitti_dataset_test)//input_batch_size*input_batch_size
                 forward_visual_result = forward_visual_result.reshape(data_length,6)*kitti_dataset_test.motion_stds
-                forward_visual_result[:,no_motion_flag]=0
+                #forward_visual_result[:,no_motion_flag]=0
                 #ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset_test.motion_stds+kitti_dataset_test.motion_means
                 ground_truth = ground_truth.reshape(data_length,6)*kitti_dataset_test.motion_stds
 
                 forward_visual_result_m = tf.eular2pose(forward_visual_result)
                 ground_truth_m          = tf.eular2pose(ground_truth)
-                plot_path([ground_truth_m,forward_visual_result_m],epoch)
+                plot_path([ground_truth_m,forward_visual_result_m],epoch,args)
                 #forward_visual_result_m = tf.ses2poses(forward_visual_result)
                 #ground_truth_m          = tf.ses2poses(ground_truth)
-                rot_eval,tra_eval   = evaluate.evaluate(ground_truth_m,forward_visual_result_m)
-                
-                testing_ate_data.write(str(np.mean(tra_eval))+' '+ str(np.mean(rot_eval))+'\n')
-                testing_ate_data.flush()
-def plot_path(poses,epoch):
+                if rpe_flag:
+                    rot_eval,tra_eval   = evaluate.evaluate(ground_truth_m,forward_visual_result_m)
+                    
+                    testing_ate_data.write(str(np.mean(tra_eval))+' '+ str(np.mean(rot_eval))+'\n')
+                    testing_ate_data.flush()
+def plot_path(poses,epoch,args):
     fig = plt.figure(figsize=(12,6.5))
     labels = ['Ground Truth','Estimation']
     i = 0
