@@ -1,3 +1,19 @@
+options = {
+'data_path' : '../dataset/kitti/',
+'model_path': '',
+'batch_size': 10,
+'training_tag': 'test',
+'log_period'  : 5,
+'finetune_flag': False,
+'coor_layer_flag': False,
+'use_gpu_flag':  False,
+'data_balance_flag': False,
+'color_flag' : False,
+'rpe_flag' : False,
+'camera_parameter' : [640,180,640,640,320,90],
+'vo_dimension' : [False, False, True, False, True, False]
+}
+"""
 import argparse
 #configuration
 def parse():
@@ -16,3 +32,4 @@ def parse():
     parser.add_argument('--mean_std_path', dest='mean_std_path', default='my_utils/mean_std.txt', help='visdom port')
     args = parser.parse_args()
     return args
+"""
