@@ -41,8 +41,8 @@ def main():
     ################### initial logger   ####################
     training_loss_data = open('../checkpoint/saved_result/{}_training.loss'.format(args['training_tag']), 'a')
     testing_loss_data  = open('../checkpoint/saved_result/{}_testing.loss'.format(args['training_tag']), 'a')
-    training_ate_data  = open('../checkpoint/saved_result/{}_training.ate'.format(args['training_tag']), 'a')
-    testing_ate_data   = open('../checkpoint/saved_result/{}_testing.ate'.format(args['training_tag']), 'a')
+    training_rpe_data  = open('../checkpoint/saved_result/{}_training.ate'.format(args['training_tag']), 'a')
+    testing_rpe_data   = open('../checkpoint/saved_result/{}_testing.ate'.format(args['training_tag']), 'a')
      ################## training   #######################
 
     for epoch in range(101):
@@ -62,10 +62,12 @@ def main():
         if epoch % args['log_period'] ==0:
             model_saved_path = '../checkpoint/saved_model/model_{}_{}.pt'.format(args['training_tag'],str(epoch).zfill(3) )
             torch.save(model.state_dict(),model_saved_path )
+            evaluate_model(model, dataloader_vis, training_loss_data, training_rpe_data, args)
+            evaluate_model(model, dataloader_vid, testing_loss_data,  testing_rpe_data,  args)
         print('epoch end')
 
 
-def evaluate_vo(model, dataloader, log_loss_data, log_rpe_data, args):
+def evaluate_model(model, dataloader, log_loss_data, log_rpe_data, args):
     """
     To evaluate the trained model with given data
     Attributes:
