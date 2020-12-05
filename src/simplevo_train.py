@@ -44,7 +44,7 @@ def main():
     training_rpe_data  = open('../checkpoint/saved_result/{}_training.ate'.format(args['training_tag']), 'a')
     testing_rpe_data   = open('../checkpoint/saved_result/{}_testing.ate'.format(args['training_tag']), 'a')
      ################## training   #######################
-
+    evaluate_model(model, dataloader_vis, training_loss_data, training_rpe_data, args)
     for epoch in range(101):
         print('epoch start')
         epoch_loss = 0
@@ -88,7 +88,7 @@ def evaluate_model(model, dataloader, log_loss_data, log_rpe_data, args):
         epoch_loss = 0
         for i_batch, sample_batched in enumerate(dataloader):
             model.zero_grad()
-            batch_loss, result = pad_update(model,sample_batched,use_gpu_flag=args['use_gpu_flag'])
+            batch_loss, result = pad_update(model,sample_batched,use_gpu_flag=args['use_gpu_flag'], vo_dimension = args['vo_dimension'])
             #batch_loss.backward()
             batch_loss.detach_()
             log_loss_data.write(str(batch_loss.cpu().data.tolist())+'\n')
@@ -99,12 +99,13 @@ def evaluate_model(model, dataloader, log_loss_data, log_rpe_data, args):
             forward_result = np.append(forward_result,temp_f)
             ground_truth = np.append(ground_truth,gt_f_12)
 
-        forward_result = forward_result.reshape(-1,6)*dataloader.dataset.motion_stds
-        ground_truth = ground_truth.reshape(-1,6)*dataloader.dataset.motion_stds
 
-        forward_result_m = tf.eular2pose(forward_result)
-        ground_truth_m          = tf.eular2pose(ground_truth)
         if args['rpe_flag']:
+            forward_result = forward_result.reshape(-1,6)*dataloader.dataset.motion_stds
+            ground_truth = ground_truth.reshape(-1,6)*dataloader.dataset.motion_stds
+
+            forward_result_m = tf.eular2pose(forward_result)
+            ground_truth_m          = tf.eular2pose(ground_truth)
             rot_train,tra_train   = evaluate.evaluate(ground_truth_m,forward_result_m)
             log_rpe_data.write(str(np.mean(tra_train))+' '+ str(np.mean(rot_train))+'\n')
             log_rpe_data.flush()
@@ -267,7 +268,7 @@ def pad_update(model, sample_batched, use_gpu_flag=True, vo_dimension = [True, T
     predict_f_12 = model(input_batch_images_f_12)
     predict_b_21 = model(input_batch_images_b_21)
     result=[predict_f_12,predict_b_21]#,predict_f_13,att_f_13,predict_b_31,att_b_31,predict_f_23,att_f_23,predict_b_32,att_b_32]
-    print(input_batch_motions_b_21.shape, input_batch_motions_b_21[:, vo_dimension].shape)
+    #print(input_batch_motions_b_21.shape, input_batch_motions_b_21[:, vo_dimension].shape)
     batch_loss = loss_functions.GroupGVLoss(predict_f_12, input_batch_motions_f_12[:, vo_dimension], \
         predict_b_21,input_batch_motions_b_21[:, vo_dimension])
 
